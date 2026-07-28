@@ -432,8 +432,8 @@ export const SEO_META: Record<string, { title: string; description: string; noin
     description: "Cam balkon, PVC pencere ve kapılar için ölçüye özel plise perde ve plise sineklik. Ölçünüzü girin, fiyatı anında görün; Türkiye geneli sipariş verin.",
   },
   "/olcu-asistani": {
-    title: "Akıllı Plise Perde Ölçü Asistanı | RGNFIX",
-    description: "Cam balkon, PVC ve alüminyum pencere ölçülerini adım adım alın; kanatları doğrulayın ve ölçüyü fiyat hesabına aktarın.",
+    title: "Online Ölçü Alma Rehberi ve Ön Keşif | RGNFIX",
+    description: "Cam balkon, PVC pencere-kapı ve alüminyum sistemler için görsel ölçü rehberi. Yaklaşık ölçülerinizi mm olarak kaydedin, ön keşif özeti oluşturun.",
   },
   "/gorsel-olcu-rehberi": {
     title: "Görsel Plise Perde Ölçü Rehberi | RGNFIX",
