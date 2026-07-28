@@ -1,303 +1,242 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
 import {
-  Bot,
-  Ruler,
-  Calculator,
-  Palette,
-  Layers,
-  Wrench,
-  ShoppingCart,
-  MapPin,
-  Sparkles,
   ArrowRight,
+  Calculator,
   CheckCircle2,
-  Activity,
-  Gauge,
-  ScanLine,
+  ChevronRight,
+  CircleHelp,
+  Clock3,
+  CreditCard,
+  Grid2X2,
+  Layers3,
+  MessageCircle,
+  PackageCheck,
+  Palette,
+  PlayCircle,
+  Ruler,
   ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  Truck,
+  Wrench,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { trackEvent } from "@/lib/analytics";
 
-const features = [
-  { href: "/ai-danismani", icon: Bot, label: "AI Danışman", desc: "Yapay zeka ile perde danışmanlığı", color: "from-primary to-cyan-700" },
-  { href: "/olcu-asistani", icon: Ruler, label: "Ölçü Asistanı", desc: "Adım adım ölçü alma rehberi", color: "from-secondary to-teal-700" },
-  { href: "/fiyat-hesapla", icon: Calculator, label: "Fiyat Hesapla", desc: "Anlık fiyat hesaplama", color: "from-primary to-cyan-700" },
-  { href: "/kumas-karsilastirma", icon: Layers, label: "Kumaş Karşılaştır", desc: "Kumaşları yan yana incele", color: "from-secondary to-teal-700" },
-  { href: "/renk-danismani", icon: Palette, label: "Renk Danışmanı", desc: "Mekanınıza uygun renkler", color: "from-primary to-cyan-700" },
-  { href: "/montaj-rehberi", icon: Wrench, label: "Montaj Rehberi", desc: "Kolay montaj talimatları", color: "from-secondary to-teal-700" },
-  { href: "/siparis", icon: ShoppingCart, label: "Sipariş Ver", desc: "Hızlı ve güvenli sipariş", color: "from-primary to-cyan-700" },
-  { href: "/bayi-haritasi", icon: MapPin, label: "Bayi Bul", desc: "Size en yakın bayi", color: "from-secondary to-teal-700" },
-];
-
-const benefits = [
-  "Yapay zeka destekli kişisel danışmanlık",
-  "Dakikalar içinde doğru ölçü alma",
-  "Anlık fiyat hesaplama ve karşılaştırma",
-  "Güvenli online sipariş ve takip",
-  "3.000 ₺ üzeri ücretsiz kargo",
-  "7/24 destek ve garanti",
-];
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06 },
+const productCards = [
+  {
+    title: "Ölçüye Özel Plise Perde",
+    description: "Cam balkon, PVC pencere, alüminyum doğrama ve kapılar için kumaş, profil ve montaj seçiminize göre hazırlanır.",
+    href: "/plise-perde",
+    cta: "Plise perdeleri incele",
+    image: "/fabrics/catalog/urun-nova-vidali.png",
+    alt: "Ölçüye özel Nova plise perde örneği",
+    badge: "Perde",
   },
-};
+  {
+    title: "Kapı ve Pencere Plise Sineklik",
+    description: "Balkon kapısı ve pencereler için ölçüye göre üretilen, katlanır yapılı plise sineklik seçenekleri.",
+    href: "/plise-sineklik",
+    cta: "Plise sineklik seç",
+    image: "/sineklik/kapi-antrasit.svg",
+    alt: "Antrasit kapı plise sineklik çizimi",
+    badge: "Sineklik",
+  },
+];
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] as unknown as [number, number, number, number] } },
-};
+const processSteps = [
+  { icon: Ruler, title: "Uygulama alanını seçin", text: "Cam balkon, PVC, alüminyum, kapı veya pencere tipini belirleyin." },
+  { icon: Grid2X2, title: "Her parçayı ölçün", text: "En ve boy değerlerini ayrı kaydedin; sistem her ölçüyü size tekrar onaylatır." },
+  { icon: Palette, title: "Ürünü yapılandırın", text: "Kumaş serisi, renk, profil, kasa ve montaj tipini karşılaştırın." },
+  { icon: Calculator, title: "Fiyatı anında görün", text: "Güncel m² fiyatı ve seçim farklarıyla toplam tutarı siparişten önce görün." },
+  { icon: PackageCheck, title: "Sipariş ve kurulum", text: "Ölçüye özel üretim, güvenli paketleme ve montaj rehberiyle teslim alın." },
+];
+
+const measurementTools = [
+  { icon: Ruler, title: "Akıllı Ölçü Asistanı", text: "Kanat ve parçaları sırayla ölçün, sesli teyitle yanlış giriş riskini azaltın.", href: "/olcu-asistani", cta: "Ölçüyü başlat" },
+  { icon: PlayCircle, title: "Görsel Ölçü Rehberi", text: "Pencere, kapı ve cam balkon için mezuranın yerleşeceği noktaları görün.", href: "/gorsel-olcu-rehberi", cta: "Görsel rehberi aç" },
+  { icon: MessageCircle, title: "Fotoğraflı Ölçü Desteği", text: "Kararsız kaldığınız uygulama alanı için fotoğrafla destek talebi oluşturun.", href: "/olcu-fotografi", cta: "Fotoğraf gönder" },
+];
+
+const faq = [
+  { q: "Plise perde ve sineklik ölçüye özel mi üretiliyor?", a: "Evet. Ürünler siparişte onayladığınız uygulama, en, boy, adet ve varyant bilgilerine göre hazırlanır." },
+  { q: "Fiyatı sipariş vermeden görebilir miyim?", a: "Evet. Ölçü, kumaş, kasa ve montaj seçimini yaptıktan sonra güncel toplam fiyatı görebilirsiniz." },
+  { q: "Türkiye’nin her yerine gönderim var mı?", a: "Evet. Ölçüye özel hazırlanan demonte ürünler Türkiye’nin 81 iline kargo ile gönderilir." },
+  { q: "Ürünü kendim monte edebilir miyim?", a: "Uygun montaj tipi seçildiğinde kurulum rehberinden yararlanabilirsiniz. Kararsız kaldığınız noktada destek ekibine ulaşabilirsiniz." },
+  { q: "Teslimat ve ödeme seçenekleri nedir?", a: "Tahmini teslim süresi 7 iş günüdür. Kapıda ödeme mevcuttur; 3.000 TL ve üzeri siparişlerde kargo ücretsizdir." },
+];
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden future-grid border-b border-border/60">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-background/70 to-secondary/12" />
-        <div className="absolute -top-32 right-0 w-[34rem] h-[34rem] bg-secondary/15 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 left-0 w-[30rem] h-[30rem] bg-primary/15 rounded-full blur-3xl" />
-
-        <div className="container relative py-16 lg:py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] as unknown as [number, number, number, number] }}
-            className="grid lg:grid-cols-[1.05fr_.95fr] gap-12 items-center"
-          >
-            <div className="space-y-7">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-secondary/30 bg-secondary/10 text-primary text-xs font-semibold tracking-wide">
-                <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-70" /><span className="relative inline-flex h-2 w-2 rounded-full bg-secondary" /></span>
-                RGNFIX AKILLI ÖLÇÜ SİSTEMİ • ÇEVRİMİÇİ
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-serif font-semibold tracking-[-0.045em] text-balance leading-[1.04]">
-                Doğru ölçüden <span className="gradient-text">kolay kuruluma.</span>
-              </h1>
-
-              <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                RGNFIX ölçünüzü adım adım doğrular, doğru demonte ürünü eşleştirir ve kurulum sürecini tek merkezden yönetir.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <Link href="/olcu-asistani">
-                  <Button size="lg" className="btn-premium text-base gap-2 h-13 px-7">
-                    <ScanLine className="h-4 w-4" />
-                    Akıllı Taramayı Başlat
-                  </Button>
-                </Link>
-                <Link href="/ai-danismani">
-                  <Button variant="outline" size="lg" className="text-base gap-2 h-13 px-7 rounded-xl bg-background/60 backdrop-blur">
-                    AI Danışman
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 pt-4 max-w-xl">
-                {[['%98', 'Ölçü doğruluğu'], ['30 sn', 'Akıllı öneri'], ['7/24', 'AI desteği']].map(([value, label]) => (
-                  <div key={label} className="border-l-2 border-secondary/60 pl-3">
-                    <strong className="block text-lg text-foreground">{value}</strong>
-                    <span className="text-[11px] text-muted-foreground">{label}</span>
-                  </div>
-                ))}
-              </div>
+    <div>
+      <section className="relative overflow-hidden border-b bg-slate-950 text-white">
+        <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_80%_20%,#00b4b0_0,transparent_34%),radial-gradient(circle_at_20%_90%,#0096d6_0,transparent_32%)]" />
+        <div className="absolute inset-0 future-grid opacity-20" />
+        <div className="container relative grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.08fr_.92fr] lg:py-24">
+          <div>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs font-bold tracking-wide text-cyan-200">
+              <Sparkles className="h-4 w-4" /> ÖLÇÜYE ÖZEL ÜRETİM • TÜRKİYE GENELİ
             </div>
-
-            <div className="relative max-w-xl mx-auto w-full">
-              <div className="absolute inset-8 bg-secondary/20 blur-3xl rounded-full" />
-              <div className="relative glass-card p-5 sm:p-7 shadow-2xl shadow-primary/15">
-                <div className="flex items-center justify-between mb-7">
-                  <div>
-                    <p className="text-[10px] tracking-[0.18em] text-muted-foreground">CANLI KONFİGÜRATÖR</p>
-                    <h2 className="text-xl font-semibold mt-1">Salon • Güney Cephe</h2>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-secondary"><Activity className="h-4 w-4" /> Analiz aktif</div>
-                </div>
-
-                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-white/20 bg-gradient-to-br from-[#0b1d33] via-[#102a43] to-[#0fa4a7]/80 p-6 text-white">
-                  <div className="absolute inset-0 future-grid opacity-20" />
-                  <div className="relative h-full grid grid-cols-[1fr_auto] gap-5">
-                    <div className="flex flex-col justify-between">
-                      <div className="space-y-1"><p className="text-[10px] text-white/60">IŞIK DENGESİ</p><p className="text-3xl font-semibold">%72</p></div>
-                      <div className="space-y-2">
-                        <div className="h-1.5 rounded-full bg-white/15 overflow-hidden"><div className="h-full w-[72%] bg-cyan-300 rounded-full" /></div>
-                        <p className="text-xs text-white/65">Önerilen: Nano Insulation</p>
-                      </div>
-                    </div>
-                    <div className="relative w-28 sm:w-36 rounded-xl bg-white/10 border border-white/20 overflow-hidden flex items-center justify-center">
-                      <div className="absolute inset-x-4 top-4 bottom-4 flex gap-1.5">
-                        {[0,1,2,3,4,5].map(i => <span key={i} className="flex-1 bg-gradient-to-r from-white/80 to-cyan-100/40 skew-y-[-8deg]" />)}
-                      </div>
-                      <ScanLine className="relative h-8 w-8 text-cyan-200 animate-pulse" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 mt-4">
-                  <div className="rounded-xl bg-muted/60 p-3"><Gauge className="h-4 w-4 text-secondary mb-2" /><p className="text-[10px] text-muted-foreground">ISI KONTROLÜ</p><strong className="text-sm">Yüksek</strong></div>
-                  <div className="rounded-xl bg-muted/60 p-3"><ShieldCheck className="h-4 w-4 text-secondary mb-2" /><p className="text-[10px] text-muted-foreground">MAHREMİYET</p><strong className="text-sm">%80</strong></div>
-                  <div className="rounded-xl bg-muted/60 p-3"><Sparkles className="h-4 w-4 text-secondary mb-2" /><p className="text-[10px] text-muted-foreground">UYUM</p><strong className="text-sm">Mükemmel</strong></div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-20 lg:py-28">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold mb-4">
-              Size Nasıl Yardımcı Olabiliriz?
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              İhtiyacınıza göre aşağıdaki araçlardan birini seçin
+            <h1 className="max-w-4xl text-4xl font-extrabold leading-[1.03] tracking-[-0.04em] sm:text-5xl lg:text-7xl">
+              Ölçüye Özel Plise Perde ve <span className="bg-gradient-to-r from-cyan-300 to-emerald-300 bg-clip-text text-transparent">Plise Sineklik</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">
+              Cam balkon, PVC pencere, alüminyum doğrama ve kapılar için ölçünüzü adım adım alın. Kumaşı seçin, fiyatı anında görün ve ölçüye özel ürününüzü Türkiye’nin 81 iline sipariş verin.
             </p>
-          </motion.div>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/olcu-asistani"><Button size="lg" className="h-13 bg-cyan-500 px-7 text-base font-bold text-slate-950 hover:bg-cyan-400"><Ruler className="mr-2 h-5 w-5" />Ölçü Almaya Başla</Button></Link>
+              <Link href="/fiyat-hesapla"><Button size="lg" variant="outline" className="h-13 border-white/25 bg-white/5 px-7 text-base text-white hover:bg-white/10"><Calculator className="mr-2 h-5 w-5" />Fiyat Hesapla</Button></Link>
+            </div>
+            <div className="mt-9 grid max-w-2xl gap-3 text-sm sm:grid-cols-3">
+              <p className="flex items-center gap-2 text-white/75"><Truck className="h-4 w-4 text-cyan-300" /> 81 ile gönderim</p>
+              <p className="flex items-center gap-2 text-white/75"><CreditCard className="h-4 w-4 text-cyan-300" /> Kapıda ödeme</p>
+              <p className="flex items-center gap-2 text-white/75"><ShieldCheck className="h-4 w-4 text-cyan-300" /> 2 yıl garanti</p>
+            </div>
+          </div>
 
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-          >
-            {features.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div key={feature.href} variants={item}>
-                  <Link href={feature.href}>
-                    <Card className="group cursor-pointer h-full border-border/50 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-                      <CardContent className="p-5 flex flex-col items-center text-center space-y-3">
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-sm">{feature.label}</h3>
-                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{feature.desc}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="space-y-6"
-            >
-              <h2 className="text-3xl sm:text-4xl font-serif font-bold">
-                Neden RGNFIX?
-              </h2>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                Ölçü, ürün seçimi ve kurulum sürecinizi baştan sona dijitalleştiriyoruz. Yapay zekâ ile
-                size en uygun demonte çözümü saniyeler içinde sunuyoruz.
-              </p>
-              <div className="space-y-3">
-                {benefits.map((benefit, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                    <span className="text-sm font-medium">{benefit}</span>
-                  </div>
-                ))}
+          <div className="relative">
+            <div className="absolute -inset-10 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur">
+              <div className="mb-5 flex items-center justify-between">
+                <div><p className="text-xs font-bold tracking-[.18em] text-cyan-300">RGNFIX ÖLÇÜ MERKEZİ</p><h2 className="mt-1 text-2xl font-bold">Ölçüden siparişe tek akış</h2></div>
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400/15"><Ruler className="h-5 w-5 text-cyan-300" /></span>
               </div>
-              <Link href="/olcu-asistani">
-                <Button className="btn-premium gap-2 mt-4">
-                  Hemen Başla
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="relative"
-            >
-              <div className="aspect-square max-w-md mx-auto relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/25 rounded-3xl rotate-3" />
-                <div className="absolute inset-0 bg-gradient-to-tl from-primary/10 to-secondary/15 rounded-3xl -rotate-3" />
-                <div className="relative bg-card rounded-3xl border shadow-2xl p-8 flex flex-col items-center justify-center h-full">
-                  <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                    <Bot className="h-10 w-10 text-primary" />
-                  </div>
-                  <h3 className="font-serif text-2xl font-bold mb-2">AI Danışman</h3>
-                  <p className="text-muted-foreground text-center text-sm leading-relaxed">
-                    "Evim çok güneş alıyor, hangi kumaşı önerirsiniz?"
-                  </p>
-                  <div className="mt-6 w-full space-y-2">
-                    <div className="h-2 bg-primary/20 rounded-full w-full" />
-                    <div className="h-2 bg-primary/10 rounded-full w-3/4" />
-                    <div className="h-2 bg-primary/5 rounded-full w-1/2" />
-                  </div>
+              <div className="rounded-2xl bg-slate-900/80 p-5">
+                <div className="mb-5 flex items-center justify-between text-xs text-white/55"><span>ÖLÇÜ İLERLEMESİ</span><span>3 adımda hazır</span></div>
+                <div className="space-y-3">
+                  {[
+                    ["1", "Alanı seç", "Cam balkon • PVC • Kapı"],
+                    ["2", "Ölçüleri doğrula", "En • Boy • Adet"],
+                    ["3", "Fiyata aktar", "Kumaş • Profil • Montaj"],
+                  ].map(([number, title, text], index) => (
+                    <div key={number} className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[.04] p-4">
+                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-sm font-black ${index === 0 ? "bg-cyan-400 text-slate-950" : "bg-white/10 text-white"}`}>{number}</span>
+                      <div><p className="font-semibold">{title}</p><p className="mt-0.5 text-xs text-white/50">{text}</p></div>
+                      <ChevronRight className="ml-auto h-4 w-4 text-white/30" />
+                    </div>
+                  ))}
                 </div>
               </div>
-            </motion.div>
+              <Link href="/olcu-asistani"><Button className="mt-5 h-12 w-full bg-white font-bold text-slate-950 hover:bg-cyan-50">Akıllı ölçüyü aç <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-slate-800 to-secondary p-10 lg:p-16 text-center"
-          >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-            <div className="relative space-y-6">
-              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white">
-                Perdenizi Şimdi Tasarlayın
-              </h2>
-              <p className="text-white/80 text-lg max-w-xl mx-auto">
-                Yapay zeka danışmanımız size en uygun plise perdeyi bulmak için hazır.
-                Ücretsiz danışmanlık alın.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link href="/ai-danismani">
-                  <Button size="lg" variant="secondary" className="text-base gap-2 h-12 px-8 rounded-xl">
-                    <Bot className="h-4 w-4" />
-                    Ücretsiz Danışmanlık
-                  </Button>
-                </Link>
-                <Link href="/siparis">
-                  <Button size="lg" variant="outline" className="text-base gap-2 h-12 px-8 rounded-xl border-white/30 text-white hover:bg-white/10">
-                    <ShoppingCart className="h-4 w-4" />
-                    Sipariş Ver
-                  </Button>
-                </Link>
+      <section className="border-b bg-background">
+        <div className="container grid gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            [Clock3, "7 iş günü", "Tahmini üretim ve teslim"],
+            [Truck, "Ücretsiz kargo", "3.000 TL ve üzeri"],
+            [ShieldCheck, "2 yıl garanti", "Ürün ve destek güvencesi"],
+            [Wrench, "Montaj desteği", "Adım adım kurulum rehberi"],
+          ].map(([Icon, title, text]) => {
+            const ItemIcon = Icon as typeof Clock3;
+            return <div key={String(title)} className="flex items-center gap-3 rounded-2xl border bg-card p-4"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cyan-500/10"><ItemIcon className="h-5 w-5 text-cyan-700 dark:text-cyan-300" /></span><div><p className="font-bold">{String(title)}</p><p className="text-xs text-muted-foreground">{String(text)}</p></div></div>;
+          })}
+        </div>
+      </section>
+
+      <section className="container py-16 sm:py-24">
+        <div className="mb-10 max-w-3xl">
+          <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-700 dark:text-cyan-300">Ürünler</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Alanınıza göre doğru plise çözümü</h2>
+          <p className="mt-4 text-base leading-7 text-muted-foreground">Standart ölçü aramak yerine uygulama alanınızı seçin; ürününüz verdiğiniz ölçü ve tercihlere göre hazırlansın.</p>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {productCards.map(product => (
+            <Card key={product.href} className="group overflow-hidden border-border/70">
+              <div className="grid min-h-[24rem] sm:grid-cols-[1fr_.9fr]">
+                <CardContent className="flex flex-col p-7 sm:p-8">
+                  <span className="w-fit rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-bold text-cyan-700 dark:text-cyan-300">{product.badge}</span>
+                  <h3 className="mt-6 text-3xl font-bold leading-tight">{product.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-muted-foreground">{product.description}</p>
+                  <ul className="mt-6 space-y-2 text-sm">
+                    <li className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Ölçüye özel üretim</li>
+                    <li className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Online seçim ve sipariş</li>
+                    <li className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Türkiye geneli gönderim</li>
+                  </ul>
+                  <Link href={product.href}><Button variant="outline" className="mt-auto w-fit gap-2">{product.cta}<ArrowRight className="h-4 w-4" /></Button></Link>
+                </CardContent>
+                <div className="relative min-h-72 overflow-hidden bg-gradient-to-br from-cyan-50 to-slate-200 p-7 dark:from-slate-800 dark:to-slate-900">
+                  <img src={product.image} alt={product.alt} loading="lazy" decoding="async" className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.04]" />
+                </div>
               </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y bg-slate-950 text-white">
+        <div className="container py-16 sm:py-20">
+          <div className="mb-12 text-center">
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-300">Nasıl çalışır?</p>
+            <h2 className="mt-3 text-3xl font-bold sm:text-5xl">Ölçüden kuruluma kontrollü süreç</h2>
+          </div>
+          <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            {processSteps.map((step, index) => {
+              const Icon = step.icon;
+              return <li key={step.title} className="rounded-2xl border border-white/10 bg-white/[.04] p-5"><div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-400/15"><Icon className="h-5 w-5 text-cyan-300" /></span><span className="text-3xl font-black text-white/10">{String(index + 1).padStart(2, "0")}</span></div><h3 className="mt-5 font-bold">{step.title}</h3><p className="mt-2 text-sm leading-6 text-white/55">{step.text}</p></li>;
+            })}
+          </ol>
+        </div>
+      </section>
+
+      <section className="container py-16 sm:py-24">
+        <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-700 dark:text-cyan-300">Üst düzey ölçü platformu</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Ölçü alırken yalnız değilsiniz</h2>
+            <p className="mt-5 text-base leading-8 text-muted-foreground">Uygulama alanına göre değişen ölçü noktalarını tek bir genel anlatıma sıkıştırmıyoruz. Cam balkon kanatları, PVC, alüminyum, kapı ve pencereler için ayrı yönlendirmeler sunuyoruz.</p>
+            <Link href="/plise-perde-olcu-alma"><Button variant="link" className="mt-4 h-auto p-0 text-base">Ölçü alma rehberini okuyun <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
+          </div>
+          <div className="grid gap-4">
+            {measurementTools.map(tool => {
+              const Icon = tool.icon;
+              return <Link key={tool.href} href={tool.href}><div className="group flex cursor-pointer items-start gap-5 rounded-2xl border bg-card p-5 transition hover:border-cyan-500/50 hover:shadow-lg"><span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-500/10"><Icon className="h-6 w-6 text-cyan-700 dark:text-cyan-300" /></span><div><h3 className="text-lg font-bold">{tool.title}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{tool.text}</p><span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-cyan-700 dark:text-cyan-300">{tool.cta}<ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" /></span></div></div></Link>;
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y bg-muted/40">
+        <div className="container grid gap-10 py-16 sm:py-20 lg:grid-cols-2">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-700 dark:text-cyan-300">Kumaş ve renk</p>
+            <h2 className="mt-3 text-3xl font-bold">Işık, mahremiyet ve görünümü birlikte seçin</h2>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">Nova, Neo Fashion, Nano Clean, Nano Insulation ve Nano Pro serilerini kullanım ihtiyacınıza göre karşılaştırın. Kumaş kodunu, rengini ve profil seçimini sipariş özetinde yeniden görün.</p>
+            <div className="mt-7 flex flex-wrap gap-3"><Link href="/kumas-karsilastirma"><Button>Kumaşları karşılaştır</Button></Link><Link href="/renk-secimi"><Button variant="outline">Renk rehberini aç</Button></Link></div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              ["/fabrics/catalog/nova-krem.png", "Krem plise perde kumaşı"],
+              ["/fabrics/catalog/nova-acik-gri.png", "Açık gri plise perde kumaşı"],
+              ["/fabrics/catalog/nova-antrasit.png", "Antrasit plise perde kumaşı"],
+            ].map(([src, alt]) => <div key={src} className="overflow-hidden rounded-2xl border bg-card p-2"><img src={src} alt={alt} loading="lazy" decoding="async" className="aspect-[3/4] h-full w-full rounded-xl object-cover" /></div>)}
+          </div>
+        </div>
+      </section>
+
+      <section className="container py-16 sm:py-24">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-8 text-center"><CircleHelp className="mx-auto h-8 w-8 text-cyan-600" /><h2 className="mt-4 text-3xl font-bold sm:text-4xl">Siparişten önce merak edilenler</h2></div>
+          <div className="divide-y rounded-3xl border bg-card">
+            {faq.map(item => <details key={item.q} className="group p-5 sm:p-6"><summary className="cursor-pointer list-none pr-8 font-bold">{item.q}</summary><p className="mt-3 text-sm leading-7 text-muted-foreground">{item.a}</p></details>)}
+          </div>
+          <div className="mt-7 text-center"><Link href="/sikca-sorulan-sorular"><Button variant="outline">Tüm soruları incele</Button></Link></div>
+        </div>
+      </section>
+
+      <section className="container pb-16 sm:pb-24">
+        <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-cyan-600 via-teal-700 to-slate-950 p-8 text-white sm:p-12 lg:p-16">
+          <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto]">
+            <div><p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-100">İlk adımı doğru ölçüyle atın</p><h2 className="mt-3 max-w-3xl text-3xl font-bold sm:text-5xl">Ölçünüzü kaydedin, fiyatı görün, siparişe geçin.</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-white/70">Hesap oluşturmak zorunda kalmadan ölçü asistanını deneyebilir ve ürün seçeneklerini inceleyebilirsiniz.</p></div>
+            <div className="flex flex-col gap-3">
+              <Link href="/olcu-asistani"><Button size="lg" className="h-13 bg-white px-7 font-bold text-slate-950 hover:bg-cyan-50" onClick={() => trackEvent("measurement_start", { source: "home_final_cta" })}><Ruler className="mr-2 h-5 w-5" />Ölçü asistanını başlat</Button></Link>
+              <Link href="/siparis"><Button size="lg" variant="outline" className="h-13 border-white/25 bg-white/5 px-7 text-white hover:bg-white/10"><ShoppingCart className="mr-2 h-5 w-5" />Sipariş ekranına git</Button></Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

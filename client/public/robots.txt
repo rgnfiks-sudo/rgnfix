@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /yonetici
+Disallow: /hesabim
+Disallow: /hesap-ayarlari
+Disallow: /giris
+Disallow: /sifre-yenile
+Disallow: /api/
+
+Sitemap: https://rgnfix.com/sitemap.xml

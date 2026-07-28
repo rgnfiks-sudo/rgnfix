@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { Calculator, ArrowRight, Package, Plus, Trash2, MessageCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { MOUNT_TYPES, PROFILE_COLORS, FABRIC_SERIES, CASE_TYPES } from "@shared/
 import { formatFabricVariant, getCurrentFabricPrice, getFabricVariants } from "@shared/fabricCatalog";
 import type { MeasurementTransferPayload } from "@/features/live-measurement/rules";
 import { formatCaseType } from "@shared/orderMeasurements";
+import { trackEvent } from "@/lib/analytics";
 
 interface MeasurementItem {
   id: string;
@@ -72,6 +73,7 @@ export default function PriceCalculator() {
   const [mountType, setMountType] = useState(transferredPayload?.mountType || params.get("mount") || "");
   const [caseType, setCaseType] = useState(transferredPayload?.caseType || params.get("case") || "kalin");
   const [profileColor, setProfileColor] = useState(params.get("profile") || "");
+  const lastTrackedCalculation = useRef("");
   const windowType = transferredPayload?.applicationArea || params.get("window") || "";
 
   useEffect(() => {
@@ -146,6 +148,20 @@ export default function PriceCalculator() {
     };
   }, [measurements, selectedSeries, fabricVariant, mountType, selectedCase, currentPricePerSqm]);
 
+  useEffect(() => {
+    if (!calculation || !seriesId) return;
+    const signature = `${seriesId}:${fabricVariant}:${mountType}:${calculation.totalPrice}:${calculation.totalQuantity}`;
+    if (lastTrackedCalculation.current === signature) return;
+    lastTrackedCalculation.current = signature;
+    trackEvent("fiyat_hesaplama", {
+      item_category: "plise_perde",
+      item_variant: seriesId,
+      value: Number(calculation.totalPrice),
+      currency: "TRY",
+      quantity: calculation.totalQuantity,
+    });
+  }, [calculation, fabricVariant, mountType, seriesId]);
+
   const generateWhatsAppMessage = () => {
     if (!calculation || !selectedSeries) return "";
     let message = "🏠 *RGNFIX - Demonte Ürün Teklifi*\n\n";
@@ -179,7 +195,7 @@ export default function PriceCalculator() {
         <div className="space-y-2"><Label>Profil Rengi</Label><Select value={profileColor} onValueChange={setProfileColor}><SelectTrigger><SelectValue placeholder="Profil rengi seçin" /></SelectTrigger><SelectContent>{availableProfileColors.map(profile => <SelectItem key={profile.id} value={profile.id}><div className="flex items-center gap-2"><div className="h-4 w-4 rounded-full border" style={{ backgroundColor: profile.hex }} />{profile.name}</div></SelectItem>)}</SelectContent></Select></div>
         <div className="border-t pt-4"><div className="mb-3 flex items-center justify-between"><Label className="text-base font-semibold">Ölçüler</Label><Button variant="outline" size="sm" onClick={addMeasurement} className="gap-1"><Plus className="h-3 w-3" /> Ölçü Ekle</Button></div><div className="space-y-3">{measurements.map(measurement => <div key={measurement.id} className="space-y-2 rounded-xl border bg-muted/30 p-3"><div className="flex items-center justify-between"><Input value={measurement.label} onChange={event => updateMeasurement(measurement.id, "label", event.target.value)} className="h-7 w-52 border-0 bg-transparent px-0 text-xs font-medium" />{measurements.length > 1 && <Button variant="ghost" size="sm" onClick={() => removeMeasurement(measurement.id)} className="h-6 w-6 p-0 text-destructive"><Trash2 className="h-3 w-3" /></Button>}</div><div className="grid grid-cols-3 gap-2"><div><Label className="text-[10px]">En (cm)</Label><Input inputMode="decimal" value={measurement.width} onChange={event => updateMeasurement(measurement.id, "width", event.target.value)} /></div><div><Label className="text-[10px]">Boy (cm)</Label><Input inputMode="decimal" value={measurement.height} onChange={event => updateMeasurement(measurement.id, "height", event.target.value)} /></div><div><Label className="text-[10px]">Adet</Label><Input type="number" min="1" value={measurement.quantity} onChange={event => updateMeasurement(measurement.id, "quantity", event.target.value)} /></div></div></div>)}</div></div>
       </CardContent></Card>
-      <Card className="sticky top-24 h-fit lg:col-span-2"><CardHeader><CardTitle>Fiyat</CardTitle></CardHeader><CardContent>{calculation ? <div className="space-y-4"><div className="rounded-xl bg-muted/50 p-3 text-xs space-y-1"><div className="flex justify-between"><span>Temel m² fiyatı</span><strong>{currentBasePrice.toLocaleString("tr-TR")} ₺</strong></div>{adhesiveSurcharge > 0 && <div className="flex justify-between text-amber-700"><span>Yapıştırma farkı</span><strong>+{adhesiveSurcharge.toLocaleString("tr-TR")} ₺/m²</strong></div>}<div className="flex justify-between"><span>Uygulanan m² fiyatı</span><strong>{currentPricePerSqm.toLocaleString("tr-TR")} ₺</strong></div></div><div className="space-y-2 text-sm">{calculation.items.map((item, index) => <div key={`${item.label}-${index}`} className="flex justify-between text-xs"><span>{item.label} · {item.qty} adet</span><strong>{Math.round(item.price).toLocaleString("tr-TR")} ₺</strong></div>)}{Number(calculation.totalCaseSurcharge) > 0 && <div className="text-xs text-amber-600">Slim kasa farkı dahil</div>}<div className="flex justify-between border-t pt-3"><span className="font-semibold">Toplam</span><span className="text-2xl font-bold text-primary">{Number(calculation.totalPrice).toLocaleString("tr-TR")} ₺</span></div></div><div className="space-y-2"><Link href={orderUrl}><Button className="w-full gap-2"><Package className="h-4 w-4" /> Sipariş Ver <ArrowRight className="h-4 w-4" /></Button></Link><a href={`https://wa.me/905300288903?text=${generateWhatsAppMessage()}`} target="_blank" rel="noopener noreferrer"><Button variant="outline" className="w-full gap-2"><MessageCircle className="h-4 w-4" /> WhatsApp ile Gönder</Button></a><PdfExport items={calculation.items} seriesId={seriesId} mountType={mountType} caseType={caseType} profileColor={profileColor} totalPrice={calculation.totalPrice} totalArea={calculation.totalArea} isFreeShipping={calculation.isFreeShipping} /></div></div> : <div className="py-8 text-center text-muted-foreground"><Calculator className="mx-auto mb-3 h-10 w-10 opacity-30" /><p>Kumaş, varyant, montaj ve ölçü bilgilerini girin.</p></div>}</CardContent></Card>
+      <Card className="sticky top-24 h-fit lg:col-span-2"><CardHeader><CardTitle>Fiyat</CardTitle></CardHeader><CardContent>{calculation ? <div className="space-y-4"><div className="rounded-xl bg-muted/50 p-3 text-xs space-y-1"><div className="flex justify-between"><span>Temel m² fiyatı</span><strong>{currentBasePrice.toLocaleString("tr-TR")} ₺</strong></div>{adhesiveSurcharge > 0 && <div className="flex justify-between text-amber-700"><span>Yapıştırma farkı</span><strong>+{adhesiveSurcharge.toLocaleString("tr-TR")} ₺/m²</strong></div>}<div className="flex justify-between"><span>Uygulanan m² fiyatı</span><strong>{currentPricePerSqm.toLocaleString("tr-TR")} ₺</strong></div></div><div className="space-y-2 text-sm">{calculation.items.map((item, index) => <div key={`${item.label}-${index}`} className="flex justify-between text-xs"><span>{item.label} · {item.qty} adet</span><strong>{Math.round(item.price).toLocaleString("tr-TR")} ₺</strong></div>)}{Number(calculation.totalCaseSurcharge) > 0 && <div className="text-xs text-amber-600">Slim kasa farkı dahil</div>}<div className="flex justify-between border-t pt-3"><span className="font-semibold">Toplam</span><span className="text-2xl font-bold text-primary">{Number(calculation.totalPrice).toLocaleString("tr-TR")} ₺</span></div></div><div className="space-y-2"><Link href={orderUrl} onClick={() => trackEvent("begin_checkout", { value: Number(calculation.totalPrice), currency: "TRY", item_category: "plise_perde" })}><Button className="w-full gap-2"><Package className="h-4 w-4" /> Sipariş Ver <ArrowRight className="h-4 w-4" /></Button></Link><a href={`https://wa.me/905300288903?text=${generateWhatsAppMessage()}`} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("whatsapp_click", { source: "price_calculator", value: Number(calculation.totalPrice) })}><Button variant="outline" className="w-full gap-2"><MessageCircle className="h-4 w-4" /> WhatsApp ile Gönder</Button></a><PdfExport items={calculation.items} seriesId={seriesId} mountType={mountType} caseType={caseType} profileColor={profileColor} totalPrice={calculation.totalPrice} totalArea={calculation.totalArea} isFreeShipping={calculation.isFreeShipping} /></div></div> : <div className="py-8 text-center text-muted-foreground"><Calculator className="mx-auto mb-3 h-10 w-10 opacity-30" /><p>Kumaş, varyant, montaj ve ölçü bilgilerini girin.</p></div>}</CardContent></Card>
     </div>
   </div>;
 }

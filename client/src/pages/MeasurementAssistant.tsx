@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, ArrowRight, CheckCircle2, MessageCircle, RefreshCcw, Ruler, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, CheckCircle2, MessageCircle, Mic2, RefreshCcw, Ruler, ShieldCheck, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CASE_TYPES } from "@shared/types";
 import LiveMeasurementCamera from "@/features/live-measurement/LiveMeasurementCamera";
+import { trackEvent } from "@/lib/analytics";
 import { RealtimeVoiceGuide, type VoiceState } from "@/lib/realtimeVoice";
 import {
   APPLICATION_AREAS,
@@ -274,12 +275,14 @@ export default function MeasurementAssistant() {
       height: formatCm(first.productionHeightCm),
       count: "1",
     });
+    trackEvent("olcu_asistani_tamamlama", { application_area: applicationArea, piece_count: calculatedMeasurements.length });
     navigate(`/fiyat-hesapla?${query.toString()}`);
   };
 
   const sendToWhatsApp = () => {
     if (!applicationArea || !mountType || calculatedMeasurements.length === 0) return;
     const text = buildMeasurementText({ applicationArea, mountType, measurements: calculatedMeasurements });
+    trackEvent("whatsapp_click", { source: "measurement_result", application_area: applicationArea });
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   };
 
@@ -311,16 +314,45 @@ export default function MeasurementAssistant() {
 
   if (screen === "intro") {
     return (
-      <div className="container max-w-xl py-12 sm:py-20">
-        <Card className="border-border/60 shadow-lg">
-          <CardContent className="p-7 text-center sm:p-10">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary"><Ruler className="h-7 w-7" /></div>
-            <h1 className="mt-5 text-3xl font-serif font-bold">Canlı Ölçü Asistanı</h1>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Sizi adım adım yönlendireceğiz. Çelik metrenizi hazırlayın.</p>
-            <Button onClick={() => void startAssistant()} className="mt-7 h-12 w-full gap-2 text-base">Ölçüye Başla <ArrowRight className="h-4 w-4" /></Button>
-            <p className="mt-3 text-[11px] text-muted-foreground">Ses yapay zekâ tarafından oluşturulur.</p>
-          </CardContent>
-        </Card>
+      <div className="container max-w-5xl py-10 sm:py-16">
+        <div className="mb-8 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300"><Ruler className="h-7 w-7" /></div>
+          <p className="mt-5 text-xs font-bold uppercase tracking-[.2em] text-cyan-700 dark:text-cyan-300">RGNFIX ölçü merkezi</p>
+          <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Akıllı Plise Ölçü Asistanı</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">Cam balkon, PVC, alüminyum, kapı ve pencere ölçülerini aynı kalıba zorlamadan; seçtiğiniz uygulama alanına göre adım adım kaydedin.</p>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
+          <Card className="overflow-hidden border-cyan-500/20 shadow-xl">
+            <CardContent className="p-6 sm:p-8">
+              <h2 className="text-2xl font-bold">Başlamadan önce</h2>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {[
+                  [Ruler, "Metal mezura", "Esnek terzi metresi yerine çelik/metre kullanın."],
+                  [Camera, "Aydınlık ortam", "Ölçü noktalarını ve doğrama kenarlarını net görün."],
+                  [Mic2, "Sesli teyit", "Girdiğiniz en ve boy değerlerini sistemden tekrar dinleyin."],
+                  [ShieldCheck, "Son kontrol", "Her kanadı ayrı onaylayıp fiyat ekranına aktarın."],
+                ].map(([Icon, title, text]) => {
+                  const ItemIcon = Icon as typeof Ruler;
+                  return <div key={String(title)} className="rounded-2xl border bg-muted/30 p-4"><ItemIcon className="h-5 w-5 text-cyan-700 dark:text-cyan-300" /><h3 className="mt-3 font-bold">{String(title)}</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">{String(text)}</p></div>;
+                })}
+              </div>
+              <Button onClick={() => { trackEvent("measurement_start", { source: "measurement_intro" }); void startAssistant(); }} className="mt-7 h-13 w-full gap-2 text-base font-bold">Ölçüye Başla <ArrowRight className="h-4 w-4" /></Button>
+              <p className="mt-3 text-center text-[11px] text-muted-foreground">Sesli yönlendirme yapay zekâ tarafından oluşturulur; yazılı adımlar her zaman görünür kalır.</p>
+            </CardContent>
+          </Card>
+          <div className="rounded-3xl bg-slate-950 p-6 text-white sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-300">Bu akışta</p>
+            <ol className="mt-6 space-y-5">
+              {[
+                "Uygulama ve montaj tipini seçersiniz",
+                "Her kanadın net en ve boyunu girersiniz",
+                "Sistem ölçüleri tek tek teyit eder",
+                "Onaylanan ölçüler fiyat hesabına aktarılır",
+              ].map((step, index) => <li key={step} className="flex gap-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-cyan-400 text-sm font-black text-slate-950">{index + 1}</span><p className="pt-1 text-sm leading-6 text-white/70">{step}</p></li>)}
+            </ol>
+            <div className="mt-7 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs leading-6 text-white/60">Ölçüleriniz bu cihazda geçici olarak tutulur ve siz fiyat hesabına geçene kadar kullanılır.</div>
+          </div>
+        </div>
       </div>
     );
   }

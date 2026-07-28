@@ -37,6 +37,26 @@ const DeleteAccountPage = lazy(() => import("./pages/LegalPages").then(module =>
 const ForgotPassword = lazy(() => import("./pages/AuthRecovery").then(module => ({ default: module.ForgotPassword })));
 const ResetPassword = lazy(() => import("./pages/AuthRecovery").then(module => ({ default: module.ResetPassword })));
 const VerifyEmail = lazy(() => import("./pages/AuthRecovery").then(module => ({ default: module.VerifyEmail })));
+const SeoLandingPage = lazy(() => import("./pages/SeoLandingPage"));
+
+const seoLandingPaths = [
+  "/plise-perde",
+  "/plise-perde-fiyatlari",
+  "/olcuye-ozel-plise-perde",
+  "/cam-balkon-plise-perde",
+  "/pvc-pencere-plise-perde",
+  "/plise-sineklik",
+  "/pencere-plise-sineklik",
+  "/kapi-plise-sineklik",
+  "/plise-sineklik-fiyatlari",
+  "/plise-perde-olcu-alma",
+  "/plise-sineklik-olcu-alma",
+  "/plise-perde-montaji",
+  "/plise-sineklik-montaji",
+  "/renk-secimi",
+  "/sikca-sorulan-sorular",
+  "/blog",
+];
 
 function Router() {
   return (
@@ -70,6 +90,7 @@ function Router() {
       <Route path="/mesafeli-satis-sozlesmesi" component={DistanceSalesAgreement} />
       <Route path="/destek" component={SupportPage} />
       <Route path="/hesap-silme" component={DeleteAccountPage} />
+      {seoLandingPaths.map(path => <Route key={path} path={path} component={SeoLandingPage} />)}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

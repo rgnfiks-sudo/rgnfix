@@ -3,31 +3,35 @@ import { startLogin } from "@/const";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X, Sun, Moon, User, LogOut, Ruler, Calculator, Palette, Bot, Layers, Wrench, ShoppingCart, LayoutDashboard, Settings, Grid2X2, Search, WalletCards, Truck, ShieldCheck, CreditCard } from "lucide-react";
+import { Menu, X, Sun, Moon, User, LogOut, Ruler, Calculator, Palette, Bot, Layers, Wrench, ShoppingCart, LayoutDashboard, Settings, Grid2X2, Search, WalletCards, Truck, ShieldCheck, CreditCard, MessageCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 import { BUSINESS } from "@/config/business";
+import { getSeoMeta, normalizeSeoPath, SITE_URL } from "@shared/seoCatalog";
+import { trackEvent } from "@/lib/analytics";
 
 const navItems = [
-  { href: "/ai-danismani", label: "AI Danışman", icon: Bot },
+  { href: "/plise-perde", label: "Plise Perde", icon: Layers },
+  { href: "/plise-sineklik", label: "Plise Sineklik", icon: Grid2X2 },
   { href: "/olcu-asistani", label: "Ölçü Asistanı", icon: Ruler },
   { href: "/fiyat-hesapla", label: "Fiyat Hesapla", icon: Calculator },
-  { href: "/kumas-karsilastirma", label: "Plise Perde", icon: Layers },
-  { href: "/sineklik", label: "Plise Sineklik", icon: Grid2X2 },
-  { href: "/renk-danismani", label: "Renk Danışmanı", icon: Palette },
-  { href: "/montaj-rehberi", label: "Montaj Rehberi", icon: Wrench },
+  { href: "/kumas-karsilastirma", label: "Kumaşlar", icon: Palette },
+  { href: "/montaj-rehberi", label: "Montaj", icon: Wrench },
+  { href: "/blog", label: "Rehberler", icon: Bot },
   { href: "/siparis", label: "Sipariş", icon: ShoppingCart },
   { href: "/siparis-sorgula", label: "Sipariş Sorgula", icon: Search },
 ];
 
-const SEO: Record<string, { title: string; description: string }> = {
-  "/": { title: "RGNFIX | Cam Balkon Plise Perde ve Akıllı Online Sipariş", description: "Cam balkon, PVC ve alüminyum doğramalar için ölçüye özel plise perde. Anlık fiyat, online sipariş ve 3000 TL üzeri ücretsiz kargo." },
-  "/siparis": { title: "Online Plise Perde Siparişi | RGNFIX", description: "Ölçünüzü girin, kumaş ve montaj tipini seçin, plise perde siparişinizi online oluşturun. Türkiye geneli gönderim." },
-  "/fiyat-hesapla": { title: "Plise Perde Fiyat Hesaplama 2026 | RGNFIX", description: "Nova, Neo Fashion, Nano Clean, Nano Insulation ve Nano Pro fiyatlarını ölçünüze göre anında hesaplayın." },
-  "/sineklik": { title: "Plise Sineklik Fiyatları | Kapı ve Pencere Plise Sineklik", description: "Kapı ve pencere için ölçüye özel plise sineklik. Fiber tül, kolay kullanım ve Türkiye geneli sipariş desteği." },
-  "/renk-danismani": { title: "Plise Perde Renk ve Varyant Önerici | RGNFIX", description: "Duvar, zemin ve mobilya renginize uygun plise perde serisini ve VR varyantını bulun." },
-};
+function setMeta(selector: string, attribute: "name" | "property", key: string, content: string) {
+  let element = document.head.querySelector<HTMLMetaElement>(selector);
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(attribute, key);
+    document.head.appendChild(element);
+  }
+  element.content = content;
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, logout } = useAuth();
@@ -40,11 +44,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    const seo = SEO[location] || SEO["/"];
+    const path = normalizeSeoPath(location);
+    const seo = getSeoMeta(path);
+    const canonicalUrl = `${SITE_URL}${path === "/" ? "" : path}`;
     document.title = seo.title;
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) { meta = document.createElement("meta"); meta.setAttribute("name", "description"); document.head.appendChild(meta); }
-    meta.setAttribute("content", seo.description);
+    setMeta('meta[name="description"]', "name", "description", seo.description);
+    setMeta('meta[name="robots"]', "name", "robots", seo.noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large");
+    setMeta('meta[property="og:title"]', "property", "og:title", seo.title);
+    setMeta('meta[property="og:description"]', "property", "og:description", seo.description);
+    setMeta('meta[property="og:url"]', "property", "og:url", canonicalUrl);
+    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+    canonical.href = canonicalUrl;
   }, [location]);
 
   return (
@@ -61,7 +76,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/90 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="group h-11 transition-transform duration-200 hover:scale-[1.02]"><BrandLogo className="h-11" /></Link>
-          <nav className="hidden lg:flex items-center gap-1">{navItems.slice(0, 6).map(item => <Link key={item.href} href={item.href}><span className={`px-3 py-2 rounded-lg text-sm font-medium cursor-pointer ${location === item.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}>{item.label}</span></Link>)}</nav>
+          <nav aria-label="Ana menü" className="hidden lg:flex items-center gap-1">{navItems.slice(0, 6).map(item => <Link key={item.href} href={item.href}><span className={`px-3 py-2 rounded-lg text-sm font-medium cursor-pointer ${location === item.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}>{item.label}</span></Link>)}</nav>
           <div className="flex items-center gap-2">
             <div className="hidden xl:flex items-center gap-2 rounded-full border border-secondary/25 bg-secondary/10 px-3 py-1.5 text-[10px] font-semibold text-primary"><span className="h-1.5 w-1.5 rounded-full bg-secondary" />DİJİTAL PLATFORM</div>
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Tema değiştir">{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</Button>
@@ -71,7 +86,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-border/50 bg-muted/30"><div className="container py-12"><div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5"><div className="space-y-3"><BrandLogo className="h-12" /><p className="text-sm text-muted-foreground">Akıllı ölçü ve demonte ürün platformu.</p><p className="text-xs text-muted-foreground">{BUSINESS.tradeName}<br/>{BUSINESS.address}</p></div><div><h4 className="mb-3 font-semibold text-sm">Hizmetler</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/ai-danismani">AI Danışman</Link><br/><Link href="/olcu-asistani">Ölçü Asistanı</Link><br/><Link href="/fiyat-hesapla">Fiyat Hesaplama</Link><br/><Link href="/siparis-sorgula">Sipariş Sorgulama</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">Ürünler</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/kumas-karsilastirma">Plise Perde</Link><br/><Link href="/sineklik">Plise Sineklik</Link><br/><Link href="/montaj-rehberi">Montaj Rehberi</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">Yasal</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/on-bilgilendirme">Ön Bilgilendirme</Link><br/><Link href="/mesafeli-satis-sozlesmesi">Mesafeli Satış Sözleşmesi</Link><br/><Link href="/gizlilik-politikasi">Gizlilik Politikası</Link><br/><Link href="/kullanim-kosullari">Kullanım Koşulları</Link><br/><Link href="/kvkk-aydinlatma">KVKK</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">İletişim</h4><div className="space-y-2 text-sm text-muted-foreground"><a href={BUSINESS.phoneHref}>{BUSINESS.phoneDisplay}</a><br/><a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a><p>{BUSINESS.paymentMethod}</p><p>Tahmini teslim: {BUSINESS.deliveryTime}</p></div></div></div><div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} RGNFIX by Plise Perde Gaziantep.</div></div></footer>
+      <a
+        href="https://wa.me/905300288903?text=Merhaba%20RGNFIX%2C%20%C3%B6l%C3%A7%C3%BCye%20%C3%B6zel%20plise%20%C3%BCr%C3%BCnler%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum."
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackEvent("whatsapp_click", { page_path: location })}
+        className="fixed bottom-5 right-5 z-40 inline-flex h-14 items-center gap-2 rounded-full bg-[#16a34a] px-5 font-semibold text-white shadow-2xl transition hover:-translate-y-0.5 hover:bg-[#15803d]"
+        aria-label="WhatsApp üzerinden RGNFIX ile iletişime geç"
+      >
+        <MessageCircle className="h-5 w-5" /><span className="hidden sm:inline">Ölçü desteği</span>
+      </a>
+      <footer className="border-t border-border/50 bg-muted/30"><div className="container py-12"><div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5"><div className="space-y-3"><BrandLogo className="h-12" /><p className="text-sm text-muted-foreground">Ölçüye özel plise perde ve sineklik için ölçü, fiyat ve online sipariş platformu.</p><p className="text-xs leading-5 text-muted-foreground">{BUSINESS.tradeName}<br/>{BUSINESS.address}</p></div><div><h4 className="mb-3 font-semibold text-sm">Ölçü ve fiyat</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/olcu-asistani">Akıllı Ölçü Asistanı</Link><br/><Link href="/plise-perde-olcu-alma">Perde Ölçü Rehberi</Link><br/><Link href="/plise-sineklik-olcu-alma">Sineklik Ölçü Rehberi</Link><br/><Link href="/fiyat-hesapla">Fiyat Hesaplama</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">Ürünler</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/plise-perde">Plise Perde</Link><br/><Link href="/cam-balkon-plise-perde">Cam Balkon Perdesi</Link><br/><Link href="/plise-sineklik">Plise Sineklik</Link><br/><Link href="/kumas-karsilastirma">Kumaş Karşılaştırma</Link><br/><Link href="/sikca-sorulan-sorular">Sık Sorulan Sorular</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">Yasal</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/on-bilgilendirme">Ön Bilgilendirme</Link><br/><Link href="/mesafeli-satis-sozlesmesi">Mesafeli Satış Sözleşmesi</Link><br/><Link href="/gizlilik-politikasi">Gizlilik Politikası</Link><br/><Link href="/kullanim-kosullari">Kullanım Koşulları</Link><br/><Link href="/kvkk-aydinlatma">KVKK</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">İletişim</h4><div className="space-y-2 text-sm text-muted-foreground"><a href={BUSINESS.phoneHref} onClick={() => trackEvent("phone_click", { page_path: location })}>{BUSINESS.phoneDisplay}</a><br/><a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a><p>{BUSINESS.paymentMethod}</p><p>Tahmini teslim: {BUSINESS.deliveryTime}</p><p>Türkiye’nin 81 iline gönderim</p></div></div></div><div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} RGNFIX. Tüm hakları saklıdır.</div></div></footer>
     </div>
   );
 }

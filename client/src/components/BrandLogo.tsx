@@ -11,7 +11,7 @@ export default function BrandLogo({ compact = false, inverse = false, className 
   const silver = inverse ? "#dbe6ef" : "#A7B1BD";
 
   return (
-    <div className={`flex items-center ${className}`} aria-label="RGNFIX - Plise Perde Gaziantep">
+    <div className={`flex items-center ${className}`} aria-label="RGNFIX ölçüye özel plise perde ve sineklik">
       <div className="flex h-full items-center gap-2.5">
         <svg viewBox="0 0 82 82" className="h-full w-auto shrink-0" role="img" aria-hidden="true">
           <defs>
@@ -33,11 +33,8 @@ export default function BrandLogo({ compact = false, inverse = false, className 
             <strong className="block whitespace-nowrap text-[1.22rem] font-black tracking-[-0.045em]" style={{ color: navy }}>
               RGN<span style={{ color: blue }}>FIX</span>
             </strong>
-            <small className={`mt-1 block whitespace-nowrap text-[7px] font-bold tracking-[0.12em] ${inverse ? "text-white/80" : "text-muted-foreground"}`}>
-              AKILLI ÖLÇÜ VE DEMONTE ÜRÜN PLATFORMU
-            </small>
-            <small className={`mt-0.5 block whitespace-nowrap text-[6px] font-semibold tracking-[0.1em] ${inverse ? "text-white/70" : "text-muted-foreground/80"}`}>
-              BY PLİSE PERDE GAZİANTEP
+            <small className={`mt-1 block whitespace-nowrap text-[7px] font-bold tracking-[0.11em] ${inverse ? "text-white/80" : "text-muted-foreground"}`}>
+              PLİSE PERDE • SİNEKLİK • AKILLI ÖLÇÜ
             </small>
           </span>
         )}

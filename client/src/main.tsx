@@ -10,6 +10,7 @@ import "./index.css";
 
 const analyticsEndpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
 const analyticsWebsiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
+const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
 const RECORDING_KEY = "rgnfix:measurement-recording";
 
 if (analyticsEndpoint && analyticsWebsiteId) {
@@ -18,6 +19,17 @@ if (analyticsEndpoint && analyticsWebsiteId) {
   analyticsScript.src = `${analyticsEndpoint.replace(/\/$/, "")}/umami`;
   analyticsScript.dataset.websiteId = analyticsWebsiteId;
   document.head.appendChild(analyticsScript);
+}
+
+if (gaMeasurementId) {
+  const gaScript = document.createElement("script");
+  gaScript.async = true;
+  gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`;
+  document.head.appendChild(gaScript);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = (...args: unknown[]) => { window.dataLayer?.push(args); };
+  window.gtag("js", new Date());
+  window.gtag("config", gaMeasurementId, { anonymize_ip: true });
 }
 
 const queryClient = new QueryClient();

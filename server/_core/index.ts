@@ -18,6 +18,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { getLLMStatus, invokeLLM, toPublicLLMError } from "./llm";
+import { buildSitemapXml, robotsTxt } from "./seo";
 
 function normalizeHostingerDatabaseUrl() {
   const raw = process.env.DATABASE_URL?.trim();
@@ -44,6 +45,12 @@ async function startServer() {
   app.disable("x-powered-by");
   app.set("trust proxy", 1);
   app.use((req, res, next) => {
+    if (process.env.NODE_ENV === "production" && req.hostname === "www.rgnfix.com") {
+      return res.redirect(301, `https://rgnfix.com${req.originalUrl}`);
+    }
+    if (process.env.NODE_ENV === "production" && req.hostname === "rgnfix.com" && req.get("x-forwarded-proto") === "http") {
+      return res.redirect(301, `https://rgnfix.com${req.originalUrl}`);
+    }
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -58,6 +65,12 @@ async function startServer() {
 
   app.use(express.json({ limit: "15mb" }));
   app.use(express.urlencoded({ limit: "15mb", extended: true }));
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").set("Cache-Control", "public, max-age=3600").send(robotsTxt);
+  });
+  app.get("/sitemap.xml", (_req, res) => {
+    res.type("application/xml").set("Cache-Control", "public, max-age=3600").send(buildSitemapXml());
+  });
   app.get("/api/health", (_req, res) => res.json({ status: "ok", service: "rgnfix", timestamp: new Date().toISOString() }));
   app.get("/api/ai/status", (_req, res) => res.json(getLLMStatus()));
   app.get("/api/ai/test", async (_req, res) => {
