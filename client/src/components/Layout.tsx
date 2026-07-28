@@ -7,6 +7,7 @@ import { Menu, X, Sun, Moon, User, LogOut, Ruler, Calculator, Palette, Bot, Laye
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
+import { BUSINESS } from "@/config/business";
 
 const navItems = [
   { href: "/ai-danismani", label: "AI Danışman", icon: Bot },
@@ -53,6 +54,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <span className="inline-flex items-center gap-1.5 font-bold"><Truck className="h-4 w-4" /> 3.000 TL ve üzeri ÜCRETSİZ KARGO</span>
           <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" /> 2 yıl garanti</span>
           <span className="inline-flex items-center gap-1.5"><CreditCard className="h-4 w-4" /> Kapıda ödeme</span>
+          <span className="inline-flex items-center gap-1.5"><Truck className="h-4 w-4" /> Tahmini teslim: 7 iş günü</span>
           <Link href="/fiyat-hesapla"><span className="cursor-pointer rounded-full bg-white/15 px-3 py-1 font-semibold hover:bg-white/25">Anlık fiyat al →</span></Link>
         </div>
       </div>
@@ -69,7 +71,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-border/50 bg-muted/30"><div className="container py-12"><div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5"><div className="space-y-3"><BrandLogo className="h-12" /><p className="text-sm text-muted-foreground">Akıllı ölçü ve demonte ürün platformu.</p></div><div><h4 className="mb-3 font-semibold text-sm">Hizmetler</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/ai-danismani">AI Danışman</Link><br/><Link href="/olcu-asistani">Ölçü Asistanı</Link><br/><Link href="/fiyat-hesapla">Fiyat Hesaplama</Link><br/><Link href="/siparis-sorgula">Sipariş Sorgulama</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">Ürünler</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/kumas-karsilastirma">Plise Perde</Link><br/><Link href="/sineklik">Plise Sineklik</Link><br/><Link href="/montaj-rehberi">Montaj Rehberi</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">Yasal</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/gizlilik-politikasi">Gizlilik Politikası</Link><br/><Link href="/kullanim-kosullari">Kullanım Koşulları</Link><br/><Link href="/kvkk-aydinlatma">KVKK</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">İletişim</h4><div className="space-y-2 text-sm text-muted-foreground"><p>Dijital destek merkezi</p><a href="tel:+905300288903">+90 530 028 89 03</a><p>Türkiye geneli hizmet</p></div></div></div><div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} RGNFIX by Plise Perde Gaziantep.</div></div></footer>
+      <footer className="border-t border-border/50 bg-muted/30"><div className="container py-12"><div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5"><div className="space-y-3"><BrandLogo className="h-12" /><p className="text-sm text-muted-foreground">Akıllı ölçü ve demonte ürün platformu.</p><p className="text-xs text-muted-foreground">{BUSINESS.tradeName}<br/>{BUSINESS.address}</p></div><div><h4 className="mb-3 font-semibold text-sm">Hizmetler</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/ai-danismani">AI Danışman</Link><br/><Link href="/olcu-asistani">Ölçü Asistanı</Link><br/><Link href="/fiyat-hesapla">Fiyat Hesaplama</Link><br/><Link href="/siparis-sorgula">Sipariş Sorgulama</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">Ürünler</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/kumas-karsilastirma">Plise Perde</Link><br/><Link href="/sineklik">Plise Sineklik</Link><br/><Link href="/montaj-rehberi">Montaj Rehberi</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">Yasal</h4><div className="space-y-2 text-sm text-muted-foreground"><Link href="/on-bilgilendirme">Ön Bilgilendirme</Link><br/><Link href="/mesafeli-satis-sozlesmesi">Mesafeli Satış Sözleşmesi</Link><br/><Link href="/gizlilik-politikasi">Gizlilik Politikası</Link><br/><Link href="/kullanim-kosullari">Kullanım Koşulları</Link><br/><Link href="/kvkk-aydinlatma">KVKK</Link></div></div><div><h4 className="mb-3 font-semibold text-sm">İletişim</h4><div className="space-y-2 text-sm text-muted-foreground"><a href={BUSINESS.phoneHref}>{BUSINESS.phoneDisplay}</a><br/><a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a><p>{BUSINESS.paymentMethod}</p><p>Tahmini teslim: {BUSINESS.deliveryTime}</p></div></div></div><div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} RGNFIX by Plise Perde Gaziantep.</div></div></footer>
     </div>
   );
 }

@@ -13,6 +13,8 @@ import { trpc } from "@/lib/trpc";
 import { CASE_TYPES, MOUNT_TYPES, PROFILE_COLORS, WINDOW_TYPES } from "@shared/types";
 import { formatFabricVariant, getCurrentFabricPrice, getFabricVariants, type FabricVariant } from "@shared/fabricCatalog";
 import { formatCaseType } from "@shared/orderMeasurements";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BUSINESS } from "@/config/business";
 
 type MeasurementRow = { id: string; label: string; width: string; height: string; quantity: string };
 type PriceSetting = { seriesId: string; seriesName: string; basePrice: string | number; adhesiveSurcharge: string | number };
@@ -56,6 +58,8 @@ export default function OrderPage() {
   const createOrderMutation = trpc.orders.create.useMutation();
   const [priceSettings, setPriceSettings] = useState<Record<string, PriceSetting>>({});
   const [createdOrderNumber, setCreatedOrderNumber] = useState("");
+  const [acceptedPreInfo, setAcceptedPreInfo] = useState(false);
+  const [acceptedAgreement, setAcceptedAgreement] = useState(false);
   const [measurements, setMeasurements] = useState<MeasurementRow[]>(() => readMeasurements(params));
   const [form, setForm] = useState({
     fabricId: "",
@@ -118,6 +122,10 @@ export default function OrderPage() {
   const removeMeasurement = (id: string) => setMeasurements(current => current.length > 1 ? current.filter(item => item.id !== id) : current);
 
   const submit = async () => {
+    if (!acceptedPreInfo || !acceptedAgreement) {
+      toast.error("Ön bilgilendirme formu ve mesafeli satış sözleşmesini onaylayın.");
+      return;
+    }
     if (!selectedFabric || !form.fabricColor || !form.windowType || !form.profileColor || !form.mountType || !form.customerName.trim() || !form.customerPhone.trim() || !form.customerCity.trim() || !form.customerAddress.trim()) {
       toast.error("Lütfen zorunlu alanları doldurun.");
       return;
@@ -183,7 +191,7 @@ export default function OrderPage() {
         <Card><CardHeader><CardTitle>Teslimat Bilgileri</CardTitle></CardHeader><CardContent className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Ad Soyad *</Label><Input value={form.customerName} onChange={event => setForm(current => ({ ...current, customerName: event.target.value }))} /></div><div className="space-y-2"><Label>Telefon *</Label><Input inputMode="tel" value={form.customerPhone} onChange={event => setForm(current => ({ ...current, customerPhone: event.target.value }))} /></div><div className="space-y-2"><Label>Şehir *</Label><Input value={form.customerCity} onChange={event => setForm(current => ({ ...current, customerCity: event.target.value }))} /></div><div className="space-y-2"><Label>Adres *</Label><Input value={form.customerAddress} onChange={event => setForm(current => ({ ...current, customerAddress: event.target.value }))} /></div><div className="space-y-2 sm:col-span-2"><Label>Sipariş Notu</Label><Textarea value={form.customerNote} onChange={event => setForm(current => ({ ...current, customerNote: event.target.value }))} /></div></CardContent></Card>
       </div>
 
-      <Card className="h-fit lg:sticky lg:top-24"><CardHeader><CardTitle>Fiyat Özeti</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-2 text-sm"><div className="flex justify-between"><span>Temel fiyat</span><strong>{basePrice.toLocaleString("tr-TR")} TL/m²</strong></div>{adhesiveSurcharge > 0 && <div className="flex justify-between text-amber-700"><span>Yapıştırma farkı</span><strong>+{adhesiveSurcharge} TL/m²</strong></div>}{caseSurcharge > 0 && <div className="flex justify-between text-amber-700"><span>Slim kasa farkı</span><strong>+{caseSurcharge} TL/m²</strong></div>}<div className="flex justify-between border-t pt-2"><span>Uygulanan fiyat</span><strong>{pricePerSqm.toLocaleString("tr-TR")} TL/m²</strong></div></div><div className="flex justify-between border-t pt-4"><span className="font-semibold">Toplam</span><span className="text-2xl font-bold text-primary">{Math.round(totalPrice).toLocaleString("tr-TR")} TL</span></div><Button onClick={() => void submit()} disabled={createOrderMutation.isPending || totalPrice <= 0} className="w-full h-12 gap-2"><ShoppingCart className="h-4 w-4" /> {createOrderMutation.isPending ? "Oluşturuluyor" : "Siparişi Oluştur"}</Button><p className="text-xs text-muted-foreground">Siparişiniz özel ölçü üretimidir. Bilgileri kontrol ederek onaylayın.</p></CardContent></Card>
+      <Card className="h-fit lg:sticky lg:top-24"><CardHeader><CardTitle>Fiyat Özeti</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-2 text-sm"><div className="flex justify-between"><span>Temel fiyat</span><strong>{basePrice.toLocaleString("tr-TR")} TL/m²</strong></div>{adhesiveSurcharge > 0 && <div className="flex justify-between text-amber-700"><span>Yapıştırma farkı</span><strong>+{adhesiveSurcharge} TL/m²</strong></div>}{caseSurcharge > 0 && <div className="flex justify-between text-amber-700"><span>Slim kasa farkı</span><strong>+{caseSurcharge} TL/m²</strong></div>}<div className="flex justify-between border-t pt-2"><span>Uygulanan fiyat</span><strong>{pricePerSqm.toLocaleString("tr-TR")} TL/m²</strong></div></div><div className="flex justify-between border-t pt-4"><span className="font-semibold">Toplam</span><span className="text-2xl font-bold text-primary">{Math.round(totalPrice).toLocaleString("tr-TR")} TL</span></div><div className="rounded-xl border bg-muted/30 p-3 text-xs text-muted-foreground"><p><strong className="text-foreground">{BUSINESS.paymentMethod}</strong></p><p className="mt-1">Tahmini teslim: {BUSINESS.deliveryTime}</p></div><div className="space-y-3 border-t pt-4 text-xs leading-5"><label className="flex cursor-pointer items-start gap-2"><Checkbox checked={acceptedPreInfo} onCheckedChange={value => setAcceptedPreInfo(value === true)} className="mt-0.5" /><span><Link href="/on-bilgilendirme" target="_blank" className="font-medium text-primary underline">Ön Bilgilendirme Formu</Link>'nu okudum ve kabul ediyorum.</span></label><label className="flex cursor-pointer items-start gap-2"><Checkbox checked={acceptedAgreement} onCheckedChange={value => setAcceptedAgreement(value === true)} className="mt-0.5" /><span><Link href="/mesafeli-satis-sozlesmesi" target="_blank" className="font-medium text-primary underline">Mesafeli Satış Sözleşmesi</Link>'ni okudum ve kabul ediyorum.</span></label></div><Button onClick={() => void submit()} disabled={createOrderMutation.isPending || totalPrice <= 0 || !acceptedPreInfo || !acceptedAgreement} className="w-full h-12 gap-2"><ShoppingCart className="h-4 w-4" /> {createOrderMutation.isPending ? "Oluşturuluyor" : "Siparişi Oluştur"}</Button><p className="text-xs text-muted-foreground">Siparişiniz özel ölçü üretimidir. Bilgileri kontrol ederek onaylayın.</p></CardContent></Card>
     </div>
   </div>;
 }

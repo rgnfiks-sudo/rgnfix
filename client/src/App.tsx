@@ -30,6 +30,8 @@ const DealerMap = lazy(() => import("./pages/DealerMap"));
 const PrivacyPolicy = lazy(() => import("./pages/LegalPages").then(module => ({ default: module.PrivacyPolicy })));
 const TermsOfUse = lazy(() => import("./pages/LegalPages").then(module => ({ default: module.TermsOfUse })));
 const KvkkNotice = lazy(() => import("./pages/LegalPages").then(module => ({ default: module.KvkkNotice })));
+const PreliminaryInformation = lazy(() => import("./pages/LegalPages").then(module => ({ default: module.PreliminaryInformation })));
+const DistanceSalesAgreement = lazy(() => import("./pages/LegalPages").then(module => ({ default: module.DistanceSalesAgreement })));
 const SupportPage = lazy(() => import("./pages/LegalPages").then(module => ({ default: module.SupportPage })));
 const DeleteAccountPage = lazy(() => import("./pages/LegalPages").then(module => ({ default: module.DeleteAccountPage })));
 const ForgotPassword = lazy(() => import("./pages/AuthRecovery").then(module => ({ default: module.ForgotPassword })));
@@ -64,6 +66,8 @@ function Router() {
       <Route path="/gizlilik-politikasi" component={PrivacyPolicy} />
       <Route path="/kullanim-kosullari" component={TermsOfUse} />
       <Route path="/kvkk-aydinlatma" component={KvkkNotice} />
+      <Route path="/on-bilgilendirme" component={PreliminaryInformation} />
+      <Route path="/mesafeli-satis-sozlesmesi" component={DistanceSalesAgreement} />
       <Route path="/destek" component={SupportPage} />
       <Route path="/hesap-silme" component={DeleteAccountPage} />
       <Route path="/404" component={NotFound} />

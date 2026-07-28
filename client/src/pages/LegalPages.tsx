@@ -2,11 +2,19 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExternalLink, FileText, Headphones, ShieldCheck, Trash2 } from "lucide-react";
+import { BUSINESS } from "@/config/business";
 
-const UPDATED_AT = "18 Temmuz 2026";
-const PHONE_DISPLAY = "+90 530 028 89 03";
+const UPDATED_AT = "27 Temmuz 2026";
+const PHONE_DISPLAY = BUSINESS.phoneDisplay;
 const PHONE_LINK = "+905300288903";
 const WHATSAPP_LINK = "https://wa.me/905300288903";
+const sellerSummary = [
+  `Satıcı / veri sorumlusu: ${BUSINESS.tradeName}`,
+  `Marka: ${BUSINESS.brandName}`,
+  `Adres: ${BUSINESS.address}`,
+  `E-posta: ${BUSINESS.email}`,
+  `Telefon: ${BUSINESS.phoneDisplay}`,
+];
 
 function LegalDocument({
   eyebrow,
@@ -45,7 +53,7 @@ export function PrivacyPolicy() {
     >
       <h2>1. Veri sorumlusu ve iletişim</h2>
       <p>
-        RGNFIX markası üzerinden hizmet sunan işletme, bu platformda işlenen kişisel veriler bakımından veri sorumlusu olarak hareket eder. Resmî ticari unvan ve kayıt bilgileri mağaza yayını öncesinde bu metne eklenecektir. Destek için <a href={`tel:${PHONE_LINK}`}>{PHONE_DISPLAY}</a> numarasından ulaşabilirsiniz.
+        RGNFIX markası üzerinden hizmet sunan {BUSINESS.tradeName}, bu platformda işlenen kişisel veriler bakımından veri sorumlusu olarak hareket eder. Adres: {BUSINESS.address}. E-posta: <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>. Destek için <a href={`tel:${PHONE_LINK}`}>{PHONE_DISPLAY}</a> numarasından ulaşabilirsiniz.
       </p>
 
       <h2>2. Toplanan bilgiler</h2>
@@ -114,7 +122,7 @@ export function TermsOfUse() {
       <p>Ürünler kullanıcının verdiği ölçü ve tercihlere göre özel üretilebilir. Sipariş onayından önce ölçü, renk, adet, kasa ve montaj tipi kontrol edilmelidir. Uygulamadaki ölçü rehberi destek amaçlıdır; emin olunmayan durumlarda canlı destek alınmalıdır.</p>
 
       <h2>4. Fiyatlar ve sipariş</h2>
-      <p>Gösterilen fiyatlar seçilen ürün, ölçü, adet, kasa ve teslimat koşullarına göre hesaplanır. Teknik hata veya açık fiyat hatası bulunması hâlinde kullanıcı bilgilendirilerek sipariş doğrulanır.</p>
+      <p>Gösterilen fiyatlar seçilen ürün, ölçü, adet, kasa ve teslimat koşullarına göre hesaplanır. {BUSINESS.paymentMethod} seçeneği mevcuttur. Tahmini teslim süresi sipariş teyidinden itibaren {BUSINESS.deliveryTime}dür. Teknik hata veya açık fiyat hatası bulunması hâlinde kullanıcı bilgilendirilerek sipariş doğrulanır.</p>
 
       <h2>5. İptal</h2>
       <p>Uygun siparişler, oluşturulduktan sonraki 24 saat içinde müşteri hesabından iptal edilebilir. Üretime alınmış, teslim edilmiş veya özel koşulları oluşmuş siparişlerde yasal istisnalar ve ürünün niteliği uygulanabilir.</p>
@@ -133,7 +141,60 @@ export function TermsOfUse() {
       <p>Güvenlik, bakım, mevzuat veya ürün geliştirme nedeniyle özellikler güncellenebilir. Siparişe ilişkin kazanılmış haklar ve yürürlükteki tüketici mevzuatı saklıdır.</p>
 
       <h2>9. İletişim</h2>
-      <p>Sorularınız için <a href={`tel:${PHONE_LINK}`}>{PHONE_DISPLAY}</a> numarasından destek alabilirsiniz.</p>
+      <p>Sorularınız için <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> adresine yazabilir veya <a href={`tel:${PHONE_LINK}`}>{PHONE_DISPLAY}</a> numarasından destek alabilirsiniz.</p>
+    </LegalDocument>
+  );
+}
+
+export function PreliminaryInformation() {
+  return (
+    <LegalDocument
+      eyebrow="Sipariş Bilgilendirmesi"
+      title="Ön Bilgilendirme Formu"
+      intro="Bu metin, RGNFIX üzerinden kapıda ödeme yöntemiyle oluşturulan ölçüye özel ürün siparişleri öncesinde tüketiciyi bilgilendirmek amacıyla sunulur."
+    >
+      <h2>1. Satıcı bilgileri</h2>
+      <ul>{sellerSummary.map(item => <li key={item}>{item}</li>)}</ul>
+      <h2>2. Ürünün temel nitelikleri ve fiyat</h2>
+      <p>Ürünün kumaş serisi, rengi, profil rengi, montaj ve kasa tipi, ölçüleri, adedi ve tüm vergiler dâhil ürün bedeli sipariş özetinde gösterilir. Sipariş vermeden önce bu bilgilerin doğruluğunu kontrol ediniz.</p>
+      <p>Ürün toplamı {BUSINESS.freeShippingThreshold.toLocaleString("tr-TR")} TL ve üzerindeyse kargo ücretsizdir. Bu tutarın altındaki siparişlerde varsa kargo bedeli, sipariş kesinleşmeden önce müşteriye ayrıca bildirilir ve onayı alınır.</p>
+      <h2>3. Ödeme, üretim ve teslimat</h2>
+      <ul>
+        <li>Ödeme yöntemi: {BUSINESS.paymentMethod}.</li>
+        <li>Tahmini teslim süresi: Sipariş teyidinden itibaren {BUSINESS.deliveryTime}.</li>
+        <li>Teslimat, müşterinin siparişte bildirdiği adrese anlaşmalı kargo aracılığıyla yapılır.</li>
+      </ul>
+      <h2>4. Ölçüye özel üretim ve cayma hakkı</h2>
+      <p>Plise perde ve sineklikler müşterinin bildirdiği ölçü, renk ve teknik tercihlere göre kişiye özel üretilebilir. Tüketicinin istekleri veya kişisel ihtiyaçları doğrultusunda hazırlanan ürünlerde cayma hakkı, mevzuatta yer alan istisna kapsamında kullanılamayabilir.</p>
+      <p>Yanlış, ayıplı veya sipariş özelliklerine aykırı ürünlere ilişkin tüketicinin kanuni seçimlik hakları saklıdır.</p>
+      <h2>5. Başvuru ve uyuşmazlık</h2>
+      <p>Sipariş, teslimat ve şikâyetler için <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> adresine yazabilir veya <a href={`tel:${PHONE_LINK}`}>{PHONE_DISPLAY}</a> numarasını arayabilirsiniz.</p>
+    </LegalDocument>
+  );
+}
+
+export function DistanceSalesAgreement() {
+  return (
+    <LegalDocument
+      eyebrow="Satış Sözleşmesi"
+      title="Mesafeli Satış Sözleşmesi"
+      intro="Bu sözleşme; sipariş ekranında bilgileri bulunan alıcı ile aşağıdaki satıcı arasında, elektronik ortamda oluşturulan ölçüye özel ürün siparişine ilişkin koşulları düzenler."
+    >
+      <h2>1. Taraflar</h2>
+      <ul>{sellerSummary.map(item => <li key={item}>{item}</li>)}</ul>
+      <h2>2. Sözleşmenin konusu</h2>
+      <p>Sözleşmenin konusu, alıcının RGNFIX üzerinden özelliklerini seçtiği ve sipariş özetinde belirtilen ürünün satışı, üretimi, teslimi ve tarafların hak ve yükümlülükleridir.</p>
+      <h2>3. Sipariş ve ödeme</h2>
+      <p>Ödeme {BUSINESS.paymentMethod.toLocaleLowerCase("tr-TR")} yöntemiyle yapılır. Ürün bedeli, vergiler ve bilinen ek masraflar sipariş özetinde gösterilir.</p>
+      <p>Sipariş, satıcının ölçü ve ürün bilgilerini müşteriyle teyit etmesinden sonra üretime alınır.</p>
+      <h2>4. Teslimat</h2>
+      <p>Tahmini teslim süresi sipariş teyidinden itibaren {BUSINESS.deliveryTime}dür. Mücbir sebep, tedarik veya kargo kaynaklı gecikmelerde müşteri bilgilendirilir.</p>
+      <h2>5. Ölçü sorumluluğu</h2>
+      <p>Alıcı, gönderdiği ölçüleri, ürün seçeneklerini ve teslimat bilgilerini siparişten önce kontrol etmekle yükümlüdür. RGNFIX ölçü araçları destek amaçlıdır; tereddüt hâlinde üretimden önce destek alınmalıdır.</p>
+      <h2>6. Cayma ve ayıplı ürün</h2>
+      <p>Alıcının ölçü ve tercihlerine göre özel üretilen ürünlerde cayma hakkı mevzuattaki istisna kapsamında kullanılamayabilir. Bu durum; ayıplı, hasarlı, yanlış veya siparişe aykırı ürünlere ilişkin kanuni hakları ortadan kaldırmaz.</p>
+      <h2>7. İletişim</h2>
+      <p>Taraflar siparişle ilgili bildirimlerini <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> adresi ve siparişte bildirilen iletişim kanalları üzerinden yapabilir.</p>
     </LegalDocument>
   );
 }
@@ -143,7 +204,7 @@ export function KvkkNotice() {
     <LegalDocument
       eyebrow="KVKK"
       title="Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metni"
-      intro="6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında RGNFIX hizmetlerinde gerçekleştirilen veri işleme faaliyetleri hakkında bilgilendirme metnidir."
+      intro={`6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında veri sorumlusu ${BUSINESS.tradeName}, RGNFIX hizmetlerinde gerçekleştirilen veri işleme faaliyetleri hakkında sizi bilgilendirir.`}
     >
       <h2>Veri kategorileri</h2>
       <p>Kimlik, iletişim, müşteri işlem, sipariş, teslimat, ölçü, işlem güvenliği, talep/şikâyet ve kullanıcı tarafından isteğe bağlı iletilen görsel veriler işlenebilir.</p>
@@ -161,7 +222,7 @@ export function KvkkNotice() {
       <p>Kanunun 11. maddesi kapsamında verilerinizin işlenip işlenmediğini öğrenme, bilgi isteme, amacına uygun kullanılıp kullanılmadığını öğrenme, aktarılan kişileri bilme, düzeltme, silme/yok etme, yapılan işlemlerin aktarım yapılan kişilere bildirilmesini isteme, otomatik analiz sonucuna itiraz ve zararın giderilmesini talep etme haklarına sahipsiniz.</p>
 
       <h2>Başvuru</h2>
-      <p>Kimliğinizi doğrulayacak bilgiler ve talebinizle birlikte destek kanalından başvuru yapabilirsiniz. Resmî işletme unvanı, açık adres ve e-posta bilgisi mağaza yayını öncesinde bu bölüme eklenecektir.</p>
+      <p>KVKK kapsamındaki taleplerinizi, kimliğinizi doğrulayacak bilgilerle birlikte <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> adresine veya {BUSINESS.address} adresine iletebilirsiniz.</p>
     </LegalDocument>
   );
 }
@@ -178,7 +239,7 @@ export function SupportPage() {
         <Card><CardContent className="p-6"><h2 className="font-semibold">Telefon</h2><p className="mt-2 text-sm text-muted-foreground">Çalışma saatleri içinde doğrudan ulaşın.</p><a className="mt-5 inline-flex font-semibold text-primary" href={`tel:${PHONE_LINK}`}>{PHONE_DISPLAY}</a></CardContent></Card>
         <Card><CardContent className="p-6"><h2 className="font-semibold">WhatsApp</h2><p className="mt-2 text-sm text-muted-foreground">Ölçü fotoğrafı ve sipariş numaranızı güvenli biçimde iletin.</p><a className="mt-5 inline-flex items-center gap-1 font-semibold text-primary" href={WHATSAPP_LINK} target="_blank" rel="noreferrer">WhatsApp’ta Aç <ExternalLink className="h-4 w-4" /></a></CardContent></Card>
       </div>
-      <Card className="mt-5"><CardContent className="p-6"><h2 className="font-semibold">Hızlı bağlantılar</h2><div className="mt-4 flex flex-wrap gap-3"><Link href="/gizlilik-politikasi"><Button variant="outline"><ShieldCheck className="mr-2 h-4 w-4" />Gizlilik</Button></Link><Link href="/kullanim-kosullari"><Button variant="outline"><FileText className="mr-2 h-4 w-4" />Koşullar</Button></Link><Link href="/hesap-silme"><Button variant="outline"><Trash2 className="mr-2 h-4 w-4" />Hesap Silme</Button></Link></div></CardContent></Card>
+      <Card className="mt-5"><CardContent className="p-6"><h2 className="font-semibold">Hızlı bağlantılar</h2><div className="mt-4 flex flex-wrap gap-3"><Link href="/on-bilgilendirme"><Button variant="outline"><FileText className="mr-2 h-4 w-4" />Ön Bilgilendirme</Button></Link><Link href="/mesafeli-satis-sozlesmesi"><Button variant="outline"><FileText className="mr-2 h-4 w-4" />Satış Sözleşmesi</Button></Link><Link href="/gizlilik-politikasi"><Button variant="outline"><ShieldCheck className="mr-2 h-4 w-4" />Gizlilik</Button></Link><Link href="/hesap-silme"><Button variant="outline"><Trash2 className="mr-2 h-4 w-4" />Hesap Silme</Button></Link></div></CardContent></Card>
     </div>
   );
 }
